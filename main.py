@@ -153,7 +153,7 @@ if st.sidebar.button("Simular Carteira", type="primary"):
                     dados_ativos = pd.DataFrame(index=pd.date_range(start=data_inicial, end=data_final, name='Date'))
 
                 dados_cdi = sgs.get({'cdi': 12}, start=data_inicial, end=data_final)
-                dados_ipca_mensal = sgs.get({'ipca': 433}, start=data_inicial, end=end_val)
+                dados_ipca_mensal = sgs.get({'ipca': 433}, start=data_inicial, end=data_final)
 
                 dados_completos = dados_ativos.copy()
                 dados_completos['fator_cdi_diario'] = 1 + (dados_cdi['cdi'] / 100)
