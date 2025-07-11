@@ -102,7 +102,7 @@ st.set_page_config(layout="wide", page_title="Simulador de Carteira")
 
 # Título principal da aplicação
 st.title("📊 Simulador de Carteira de Investimentos com Aportes")
-st.markdown("Use os controles na barra lateral para configurar e rodar a simulação (No celular clique em '>>'.")
+st.markdown("Use os controles na barra lateral para configurar e rodar a simulação (No celular clique em '>>').")
 
 # --- Barra Lateral (Sidebar) para os controles ---
 st.sidebar.header("Parâmetros da Simulação")
