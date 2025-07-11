@@ -1,5 +1,5 @@
 # =======================================================================================
-# CÓDIGO FINAL DO SIMULADOR DE CARTEIRA - VERSÃO STREAMLIT
+# CÓDIGO FINAL DO SIMULADOR DE CARTEIRA - VERSÃO STREAMLIT (CORRIGIDO)
 # =======================================================================================
 
 # Passo 1: Importação das bibliotecas necessárias
@@ -102,7 +102,7 @@ st.set_page_config(layout="wide", page_title="Simulador de Carteira")
 
 # Título principal da aplicação
 st.title("📊 Simulador de Carteira de Investimentos com Aportes")
-st.markdown("Use os controles na barra lateral para configurar e rodar a simulação.")
+st.markdown("Use os controles na barra lateral para configurar e rodar a simulação (No celular clique em ">>".")
 
 # --- Barra Lateral (Sidebar) para os controles ---
 st.sidebar.header("Parâmetros da Simulação")
@@ -115,7 +115,10 @@ aporte_inicial = st.sidebar.number_input("Aporte Inicial (R$)", min_value=0.0, v
 valor_aporte = st.sidebar.number_input("Valor por Aporte Periódico (R$)", min_value=0.0, value=1000.0, step=100.0)
 numero_aportes = st.sidebar.number_input("Nº de Aportes Periódicos", min_value=0, value=24, step=1)
 
-pct_cdi = st.sidebar.slider("% Alocado em CDI", min_value=0.0, max_value=1.0, value=0.2, step=0.05, format="%.0f%%")
+# LINHA CORRIGIDA AQUI:
+pct_cdi_int = st.sidebar.slider("% Alocado em CDI", min_value=0, max_value=100, value=80, step=5, format="%d%%")
+pct_cdi = pct_cdi_int / 100.0
+
 reinvestir_dividendos = st.sidebar.checkbox("Reinvestir Dividendos?", value=True)
 
 num_ativos = st.sidebar.number_input("Nº de Ativos na Carteira", min_value=0, max_value=10, value=3, step=1)
@@ -150,7 +153,7 @@ if st.sidebar.button("Simular Carteira", type="primary"):
                     dados_ativos = pd.DataFrame(index=pd.date_range(start=data_inicial, end=data_final, name='Date'))
 
                 dados_cdi = sgs.get({'cdi': 12}, start=data_inicial, end=data_final)
-                dados_ipca_mensal = sgs.get({'ipca': 433}, start=data_inicial, end=data_final)
+                dados_ipca_mensal = sgs.get({'ipca': 433}, start=data_inicial, end=end_val)
 
                 dados_completos = dados_ativos.copy()
                 dados_completos['fator_cdi_diario'] = 1 + (dados_cdi['cdi'] / 100)
