@@ -206,21 +206,31 @@ if st.sidebar.button("Simular Carteira", type="primary"):
                         delta=f"{rendimento_pct_carteira:.2%} de rendimento"
                     )
                     
-                    # Lógica para estilizar o % do CDI
+                    # Lógica para estilizar o % do CDI com cor dinâmica
                     if rendimento_pct_cdi > 0:
                         percentual_do_cdi = (rendimento_pct_carteira / rendimento_pct_cdi) * 100
+                        
+                        # --- LÓGICA DA COR ---
+                        # Se for maior ou igual a 100% do CDI, fica azul. Senão, vermelho.
+                        if percentual_do_cdi >= 100:
+                            cor_do_texto = "#2176ff" # Azul
+                        else:
+                            cor_do_texto = "#ff4b4b" # Vermelho
+                        # --- FIM DA LÓGICA DA COR ---
+
                         st.markdown(
                             f"""
-                            <p style='font-size: 1rem; color: #2176ff; margin-top: -10px;'>
+                            <p style='font-size: 1rem; color: {cor_do_texto}; margin-top: -10px;'>
                                 <b>{percentual_do_cdi:.2f}% do CDI</b>
                             </p>
                             """,
                             unsafe_allow_html=True
                         )
                     else:
+                        # Caso não seja aplicável, exibe em cinza
                         st.markdown(
                             f"""
-                            <p style='font-size: 1rem; color: #2176ff; margin-top: -10px;'>
+                            <p style='font-size: 1rem; color: gray; margin-top: -10px;'>
                                 <b>N/A</b>
                             </p>
                             """,
