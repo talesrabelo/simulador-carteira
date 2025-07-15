@@ -188,10 +188,46 @@ if st.sidebar.button("Simular Carteira", type="primary"):
                 total_aportado = aporte_inicial + (valor_aporte * numero_aportes)
                 
                 # --- Apresenta os resultados em colunas ---
+                
+                # 1. Calculos de rendimento para as métricas
+                rendimento_pct_carteira = ((resultado_carteira / total_aportado) - 1) if total_aportado > 0 else 0
+                rendimento_pct_cdi = ((resultado_cdi / total_aportado) - 1) if total_aportado > 0 else 0
+                rendimento_pct_ipca = ((resultado_ipca / total_aportado) - 1) if total_aportado > 0 else 0
+
+                # 2. Calculo do % do CDI (com segurança para evitar divisão por zero)
+                percentual_do_cdi_str = "N/A"
+                if rendimento_pct_cdi > 0:
+                    percentual_do_cdi = (rendimento_pct_carteira / rendimento_pct_cdi)
+                    percentual_do_cdi_str = f"{percentual_do_cdi:.1%}" # Formata como porcentagem, ex: 115.5%
+                
+                # 3. Exibição dos resultados em colunas
                 col1, col2, col3 = st.columns(3)
-                col1.metric("Patrimônio Final da Carteira", f"R$ {resultado_carteira:,.2f}", f"{((resultado_carteira/total_aportado)-1):.2%} de rendimento")
-                col2.metric("Patrimônio em 100% CDI", f"R$ {resultado_cdi:,.2f}", f"{((resultado_cdi/total_aportado)-1):.2%} de rendimento")
-                col3.metric("Patrimônio em 100% IPCA", f"R$ {resultado_ipca:,.2f}", f"{((resultado_ipca/total_aportado)-1):.2%} de rendimento")
+
+                with col1:
+                    st.metric(
+                        label="Patrimônio Final da Carteira",
+                        value=f"R$ {resultado_carteira:,.2f}",
+                        delta=f"{rendimento_pct_carteira:.2%} de rendimento"
+                    )
+                    # Adicionando a nova métrica aqui
+                    st.metric(
+                        label="% do CDI",
+                        value=percentual_do_cdi_str
+                    )
+
+                with col2:
+                    st.metric(
+                        label="Patrimônio em 100% CDI",
+                        value=f"R$ {resultado_cdi:,.2f}",
+                        delta=f"{rendimento_pct_cdi:.2%} de rendimento"
+                    )
+
+                with col3:
+                    st.metric(
+                        label="Patrimônio em 100% IPCA",
+                        value=f"R$ {resultado_ipca:,.2f}",
+                        delta=f"{rendimento_pct_ipca:.2%} de rendimento"
+                    )
                 
                 st.subheader("Evolução do Patrimônio")
                 
