@@ -1,5 +1,5 @@
 # =======================================================================================
-# CÓDIGO FINAL DO SIMULADOR DE CARTEIRA - VERSÃO STREAMLIT (CORRIGIDO)
+# CÓDIGO FINAL DO SIMULADOR DE CARTEIRA - VERSÃO STREAMLIT COM TODOS OS INCREMENTOS
 # =======================================================================================
 
 # Passo 1: Importação das bibliotecas necessárias
@@ -115,7 +115,6 @@ aporte_inicial = st.sidebar.number_input("Aporte Inicial (R$)", min_value=0.0, v
 valor_aporte = st.sidebar.number_input("Valor por Aporte Periódico (R$)", min_value=0.0, value=1000.0, step=100.0)
 numero_aportes = st.sidebar.number_input("Nº de Aportes Periódicos", min_value=0, value=24, step=1)
 
-# LINHA CORRIGIDA AQUI:
 pct_cdi_int = st.sidebar.slider("% Alocado em CDI", min_value=0, max_value=100, value=80, step=5, format="%d%%")
 pct_cdi = pct_cdi_int / 100.0
 
@@ -152,8 +151,8 @@ if st.sidebar.button("Simular Carteira", type="primary"):
                 else: 
                     dados_ativos = pd.DataFrame(index=pd.date_range(start=data_inicial, end=data_final, name='Date'))
 
-                dados_cdi = sgs.get({'cdi': 12}, start=data_inicial, end=data_final)
-                dados_ipca_mensal = sgs.get({'ipca': 433}, start=data_inicial, end=data_final)
+                dados_cdi = sgs.get({'cdi': 12}, start=data_inicial, end=end_val)
+                dados_ipca_mensal = sgs.get({'ipca': 433}, start=data_inicial, end=end_val)
 
                 dados_completos = dados_ativos.copy()
                 dados_completos['fator_cdi_diario'] = 1 + (dados_cdi['cdi'] / 100)
@@ -165,7 +164,6 @@ if st.sidebar.button("Simular Carteira", type="primary"):
                 dados_completos = pd.merge(dados_completos, dados_ipca_mensal[['fator_ipca_mensal']],
                                            left_on='mes', right_index=True, how='left')
                 
-                # Preenche valores vazios de IPCA (para o mês corrente) e remove linhas com dados faltantes de ativos
                 dados_completos.fillna(method='ffill', inplace=True)
                 dados_completos.dropna(inplace=True)
 
@@ -180,27 +178,23 @@ if st.sidebar.button("Simular Carteira", type="primary"):
             if dados_resultado is None or dados_resultado.empty:
                 st.error("Análise não pôde ser concluída (sem dados comuns para o período).")
             else:
-                st.subheader("Resultados da Simulação")
-                
+                # =======================================================================
+                # SEÇÃO DE RESULTADOS COM TODOS OS INCREMENTOS APLICADOS
+                # =======================================================================
+                st.subheader("Resultados Consolidados")
+
+                # Extrai os resultados finais e calcula o total aportado
                 resultado_carteira = float(dados_resultado['Patrimonio_Carteira'].iloc[-1])
                 resultado_cdi = float(dados_resultado['Patrimonio_Benchmark_CDI'].iloc[-1])
                 resultado_ipca = float(dados_resultado['Patrimonio_Benchmark_IPCA'].iloc[-1])
                 total_aportado = aporte_inicial + (valor_aporte * numero_aportes)
-                
-                # --- Apresenta os resultados em colunas ---
-                
-                # 1. Calculos de rendimento para as métricas
+
+                # 1. Calculos de rendimento
                 rendimento_pct_carteira = ((resultado_carteira / total_aportado) - 1) if total_aportado > 0 else 0
                 rendimento_pct_cdi = ((resultado_cdi / total_aportado) - 1) if total_aportado > 0 else 0
                 rendimento_pct_ipca = ((resultado_ipca / total_aportado) - 1) if total_aportado > 0 else 0
-
-                # 2. Calculo do % do CDI (com segurança para evitar divisão por zero)
-                percentual_do_cdi_str = "N/A"
-                if rendimento_pct_cdi > 0:
-                    percentual_do_cdi = (rendimento_pct_carteira / rendimento_pct_cdi)
-                    percentual_do_cdi_str = f"{percentual_do_cdi:.1%}" # Formata como porcentagem, ex: 115.5%
                 
-                # 3. Exibição dos resultados em colunas
+                # 2. Exibição dos resultados em colunas
                 col1, col2, col3 = st.columns(3)
 
                 with col1:
@@ -209,11 +203,27 @@ if st.sidebar.button("Simular Carteira", type="primary"):
                         value=f"R$ {resultado_carteira:,.2f}",
                         delta=f"{rendimento_pct_carteira:.2%} de rendimento"
                     )
-                    # Adicionando a nova métrica aqui
-                    st.metric(
-                        label="% do CDI",
-                        value=percentual_do_cdi_str
-                    )
+                    
+                    # Lógica para estilizar o % do CDI
+                    if rendimento_pct_cdi > 0:
+                        percentual_do_cdi = (rendimento_pct_carteira / rendimento_pct_cdi) * 100
+                        st.markdown(
+                            f"""
+                            <p style='font-size: 1rem; color: #2176ff; margin-top: -10px;'>
+                                <b>{percentual_do_cdi:.2f}% do CDI</b>
+                            </p>
+                            """,
+                            unsafe_allow_html=True
+                        )
+                    else:
+                        st.markdown(
+                            f"""
+                            <p style='font-size: 1rem; color: #2176ff; margin-top: -10px;'>
+                                <b>N/A</b>
+                            </p>
+                            """,
+                            unsafe_allow_html=True
+                        )
 
                 with col2:
                     st.metric(
@@ -229,6 +239,10 @@ if st.sidebar.button("Simular Carteira", type="primary"):
                         delta=f"{rendimento_pct_ipca:.2%} de rendimento"
                     )
                 
+                # =======================================================================
+                # FIM DA SEÇÃO DE RESULTADOS
+                # =======================================================================
+
                 st.subheader("Evolução do Patrimônio")
                 
                 # Gráfico de Evolução do Patrimônio
